@@ -17,9 +17,12 @@
  ~ under the License.
  -->
 <ivy-module version="2.0">
-  <info organisation="org.archive" module="heritrix-crawl-filter"/>
+  <info organisation="com.openplaces.heritrix" module="heritrix-crawl-filter"/>
 
   <dependencies>
-    <dependency org="org.archive" name="heritrix" rev="3.0.0" conf="* -> *,!sources,!javadoc" />	
+    <dependency org="org.archive.overlays" name="archive-overlay-commons-pool" rev="1.3" conf="* -> *,!sources,!javadoc" />
+    <dependency org="org.archive.overlays" name="archive-overlay-commons-httpclient" rev="3.1" conf="* -> *,!sources,!javadoc" />
+    <dependency org="org.springframework" name="spring-context" rev="2.5.6" conf="* -> *,!sources,!javadoc" />
+    <dependency org="org.archive.heritrix" name="heritrix" rev="3.0.0" conf="* -> *,!sources,!javadoc" />
   </dependencies>
 </ivy-module>

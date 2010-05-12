@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="jar" name="heritrix-crawl-filter">
-    <description>heritrix-Crawl-Filter</description>
+<project name="heritrix-crawl-filter" default="jar" basedir="."
+         xmlns:ivy="antlib:org.apache.ivy.ant">
 
+    <description>Heritrix-Crawl-Filter</description>
     <property name="version" value="0.1" />
 
     <property name="src"           location="src" />
@@ -68,7 +69,7 @@
     </target>
 
     <target name="resolve" depends="ivy-init-antlib" description="retrieve dependencies with ivy" unless="noivy">
-      <ivy:configure file="ivy-settings.xml" />
+      <ivy:configure file="ivysettings.xml" />
       <ivy:retrieve />
     </target>
 
@@ -123,8 +124,8 @@
     </target>
 
     <target name="jar" depends="compile,compile.tests">
-      <jar jarfile="heritrix-crawl-filter-${version}.jar" basedir="${build.classes}" />
-      <jar jarfile="heritrix-crawl-filter-${version}-tests.jar" basedir="${build.test.classes}" />
+      <jar jarfile="${project.name}-${version}.jar" basedir="${build.classes}" />
+      <jar jarfile="${project.name}-${version}-tests.jar" basedir="${build.test.classes}" />
     </target>
 
     <target name="clean">

@@ -1,11 +1,12 @@
 package com.openplaces.heritrix;
 
+import static org.archive.modules.fetcher.FetchStatusCodes.S_OUT_OF_SCOPE;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import static org.archive.modules.fetcher.FetchStatusCodes.S_OUT_OF_SCOPE;
 import org.archive.crawler.framework.Scoper;
 import org.archive.modules.CrawlURI;
 import org.archive.modules.ProcessResult;
@@ -62,10 +63,7 @@ public class HeritrixCrawlFilter extends Scoper {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
-
 	private Map<String, String> seedFiltersMap;
-	private Set<String> seedSet;
 
 	public HeritrixCrawlFilter() {
 	}
@@ -76,11 +74,6 @@ public class HeritrixCrawlFilter extends Scoper {
 
 	public void setSeedFiltersMap(Map<String, String> seedFiltersMap) {
 		this.seedFiltersMap = seedFiltersMap;
-		this.seedSet = seedFiltersMap.keySet();
-	}
-
-	public Set<String> getSeedSet() {
-		return seedSet;
 	}
 
 	@Override
@@ -89,20 +82,36 @@ public class HeritrixCrawlFilter extends Scoper {
 
 	@Override
 	protected boolean shouldProcess(CrawlURI curi) {
-		String seedUrl = curi.getVia().toString();
-		return !curi.isSeed() && getSeedSet().contains(seedUrl);
+		return !curi.isSeed();
 	}
 
 	@Override
-    protected ProcessResult innerProcessResult(CrawlURI curi) throws InterruptedException {
-		String seedUrl = curi.getVia().toString();
-		String baseUri = curi.getBaseURI().toString();
+	protected ProcessResult innerProcessResult(CrawlURI curi) throws InterruptedException {
+		CrawlURI seed = curi.getFullVia();
+		String seedUrl = "";
 
-		LOGGER.info("Checking " + curi.toString() + " for filter matches");
+		// Set a limit on the number of times to recurse
+		int count = 50;
+
+		if (seed != null) {
+			while (!seed.isSeed()) {
+				if (count == 0)
+					break;
+
+				seed = seed.getFullVia();
+
+				count--;
+			}
+
+			seedUrl = seed.toString();
+		}
+
+		String baseUri = curi.getBaseURI().toString();
 
 		// Hard-coding the retrieval of robots.txt to always happen, and also check
 		// that the base uri of the incoming link matches the seed uri
-		if (!Pattern.matches(".*robots.txt.*", baseUri) && Pattern.matches(seedUrl + ".*", baseUri)) {
+		if (!Pattern.matches(".*robots.txt.*", baseUri) && Pattern.matches(seedUrl + ".*", baseUri)
+				&& getSeedFilters().containsKey(seedUrl)) {
 			String filterString = getSeedFilters().get(seedUrl);
 
 			// Now we apply the user-defined regex to the full uri
@@ -115,6 +124,6 @@ public class HeritrixCrawlFilter extends Scoper {
 
 		// Otherwise we proceed
 		return ProcessResult.PROCEED;
-    }
+	}
 
 }
